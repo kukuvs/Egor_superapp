@@ -1,31 +1,25 @@
-import platform
-import json
-import psutil
-import netifaces
-import screeninfo
-import subprocess
-import mmap
 import os
+import json
+import mmap
 import time
+import platform
+import psutil
+import subprocess
 import posix_ipc
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 100 * 1024  # 10 KB
+SHARED_MEM_SIZE = 10 * 1024  # 10 KB
 
 SEM_REQUEST_NAME = "/sysmon_request_sem"
 SEM_RESPONSE_NAME = "/sysmon_response_sem"
 
 def get_processes():
-    processes = []
-    for proc in psutil.process_iter(['pid', 'name', 'username']):
-        processes.append(proc.info)
-    return processes
+    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]
 
 def get_gpu_info():
     try:
         result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)
-        output = result.stdout.decode('utf-8').strip().split('\n')
-        return output
+        return result.stdout.decode('utf-8').strip().split('\n')
     except Exception as e:
         return [f"Error getting GPU info: {e}"]
 
@@ -43,10 +37,7 @@ def detect_file_creation():
                         recent_files.append(path)
                 except Exception:
                     continue
-        if recent_files:
-            return recent_files
-        else:
-            return ["No files created in the last 60 seconds"]
+        return recent_files if recent_files else ["No files created in the last 60 seconds"]
     except Exception as e:
         return [f"Error detecting file creation: {e}"]
 
@@ -54,10 +45,10 @@ def get_uptime():
     try:
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
-        hours = int(uptime_seconds // 3600)
-        minutes = int((uptime_seconds % 3600) // 60)
-        seconds = int(uptime_seconds % 60)
-        return f"Uptime: {hours}h {minutes}m {seconds}s"
+        h = int(uptime_seconds // 3600)
+        m = int((uptime_seconds % 3600) // 60)
+        s = int(uptime_seconds % 60)
+        return f"Uptime: {h}h {m}m {s}s"
     except Exception as e:
         return f"Error getting uptime: {e}"
 
@@ -69,19 +60,16 @@ def get_network_config():
         except Exception:
             cmd = 'ip addr'
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = result.stdout.decode('utf-8', errors='replace')
-        return output
+        return result.stdout.decode('utf-8', errors='replace')
     except Exception as e:
         return f"Error getting network config: {e}"
 
 def execute_command(command):
     try:
         result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = result.stdout.decode('utf-8', errors='replace')
-        return output
+        return result.stdout.decode('utf-8', errors='replace')
     except subprocess.CalledProcessError as e:
-        error_output = e.stderr.decode('utf-8', errors='replace')
-        return error_output
+        return e.stderr.decode('utf-8', errors='replace')
 
 def handle_request(request_json):
     try:
@@ -98,8 +86,7 @@ def handle_request(request_json):
         elif cmd == 'get_network_config':
             response = get_network_config()
         elif cmd == 'execute_command':
-            command = request.get('data', '')
-            response = execute_command(command)
+            response = execute_command(request.get('data', ''))
         else:
             response = {'error': 'Unknown command'}
     except Exception as e:
@@ -107,7 +94,7 @@ def handle_request(request_json):
     return json.dumps(response, ensure_ascii=False)
 
 def server_loop():
-    # Создаем или перезаписываем файл с нужным размером
+    # Создаём или перезаписываем файл с нужным размером
     with open(SHARED_MEM_FILE, 'wb') as f:
         f.write(b'\x00' * SHARED_MEM_SIZE)
 
@@ -119,31 +106,23 @@ def server_loop():
         print("Server started, waiting for requests...")
 
         while True:
-            sem_request.acquire()
-            try:
-                mm.seek(0)
-                raw = mm.read(SHARED_MEM_SIZE)
-                raw = raw.split(b'\x00', 1)[0]
-                request_json = raw.decode('utf-8')
+            sem_request.acquire()  # Ждем запроса
 
-                response_json = handle_request(request_json)
+            mm.seek(0)
+            raw = mm.read(SHARED_MEM_SIZE)
+            raw = raw.split(b'\x00', 1)[0]
+            request_json = raw.decode('utf-8')
 
-                mm.seek(0)
-                encoded = response_json.encode('utf-8')
-                if len(encoded) > SHARED_MEM_SIZE:
-                    encoded = encoded[:SHARED_MEM_SIZE]
-                mm.write(encoded)
-                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
-            except Exception as e:
-                error_response = json.dumps({'error': f'Server error: {str(e)}'}, ensure_ascii=False)
-                mm.seek(0)
-                encoded = error_response.encode('utf-8')
-                if len(encoded) > SHARED_MEM_SIZE:
-                    encoded = encoded[:SHARED_MEM_SIZE]
-                mm.write(encoded)
-                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
-            finally:
-                sem_response.release()
+            response_json = handle_request(request_json)
+
+            mm.seek(0)
+            encoded = response_json.encode('utf-8')
+            if len(encoded) > SHARED_MEM_SIZE:
+                encoded = encoded[:SHARED_MEM_SIZE]
+            mm.write(encoded)
+            mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+
+            sem_response.release()  # Сигнал клиенту, что ответ готов
 
 if __name__ == "__main__":
     if platform.system().lower() != 'linux':

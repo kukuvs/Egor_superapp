@@ -9,7 +9,7 @@ import posix_ipc
 import sys
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 100 * 1024  # 10 KB
+SHARED_MEM_SIZE = 10 * 1024  # 10 KB
 
 SEM_REQUEST_NAME = "/sysmon_request_sem"
 SEM_RESPONSE_NAME = "/sysmon_response_sem"
@@ -157,10 +157,7 @@ class App(tk.Tk):
         for row in self.process_table.get_children():
             self.process_table.delete(row)
         for proc in response:
-            pid = proc.get('pid', '')
-            name = proc.get('name', '')
-            user = proc.get('username', '')
-            self.process_table.insert('', 'end', values=(pid, name, user))
+            self.process_table.insert('', 'end', values=(proc.get('pid', ''), proc.get('name', ''), proc.get('username', '')))
 
     def get_gpu_info(self):
         response = self.send_request('get_gpu_info')

@@ -123,24 +123,6 @@
         "documentation": {}
     },
     {
-        "label": "netifaces",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "netifaces",
-        "description": "netifaces",
-        "detail": "netifaces",
-        "documentation": {}
-    },
-    {
-        "label": "screeninfo",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "screeninfo",
-        "description": "screeninfo",
-        "detail": "screeninfo",
-        "documentation": {}
-    },
-    {
         "label": "subprocess",
         "kind": 6,
         "isExtraImport": true,
@@ -244,7 +226,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 100 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()",
         "detail": "gui",
         "documentation": {}
     },
@@ -253,7 +235,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_SIZE = 100 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':",
         "detail": "gui",
         "documentation": {}
     },
@@ -280,7 +262,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        output = result.stdout.decode('utf-8').strip().split('\\n')\n        return output",
+        "peekOfCode": "def get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]\ndef detect_file_creation():\n    home = os.path.expanduser(\"~\")",
         "detail": "main",
         "documentation": {}
     },
@@ -289,7 +271,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        output = result.stdout.decode('utf-8').strip().split('\\n')\n        return output\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]\ndef detect_file_creation():\n    home = os.path.expanduser(\"~\")\n    recent_files = []",
+        "peekOfCode": "def get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]\ndef detect_file_creation():\n    home = os.path.expanduser(\"~\")\n    recent_files = []\n    now = time.time()",
         "detail": "main",
         "documentation": {}
     },
@@ -307,7 +289,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_uptime():\n    try:\n        with open('/proc/uptime', 'r') as f:\n            uptime_seconds = float(f.readline().split()[0])\n        hours = int(uptime_seconds // 3600)\n        minutes = int((uptime_seconds % 3600) // 60)\n        seconds = int(uptime_seconds % 60)\n        return f\"Uptime: {hours}h {minutes}m {seconds}s\"\n    except Exception as e:\n        return f\"Error getting uptime: {e}\"",
+        "peekOfCode": "def get_uptime():\n    try:\n        with open('/proc/uptime', 'r') as f:\n            uptime_seconds = float(f.readline().split()[0])\n        h = int(uptime_seconds // 3600)\n        m = int((uptime_seconds % 3600) // 60)\n        s = int(uptime_seconds % 60)\n        return f\"Uptime: {h}h {m}m {s}s\"\n    except Exception as e:\n        return f\"Error getting uptime: {e}\"",
         "detail": "main",
         "documentation": {}
     },
@@ -316,7 +298,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_network_config():\n    try:\n        try:\n            subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n            cmd = 'ifconfig -a'\n        except Exception:\n            cmd = 'ip addr'\n        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        output = result.stdout.decode('utf-8', errors='replace')\n        return output",
+        "peekOfCode": "def get_network_config():\n    try:\n        try:\n            subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n            cmd = 'ifconfig -a'\n        except Exception:\n            cmd = 'ip addr'\n        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except Exception as e:",
         "detail": "main",
         "documentation": {}
     },
@@ -325,7 +307,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        output = result.stdout.decode('utf-8', errors='replace')\n        return output\n    except subprocess.CalledProcessError as e:\n        error_output = e.stderr.decode('utf-8', errors='replace')\n        return error_output\ndef handle_request(request_json):\n    try:",
+        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except subprocess.CalledProcessError as e:\n        return e.stderr.decode('utf-8', errors='replace')\ndef handle_request(request_json):\n    try:\n        request = json.loads(request_json)\n        cmd = request.get('command')",
         "detail": "main",
         "documentation": {}
     },
@@ -343,7 +325,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def server_loop():\n    # Создаем или перезаписываем файл с нужным размером\n    with open(SHARED_MEM_FILE, 'wb') as f:\n        f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        print(\"Server started, waiting for requests...\")\n        while True:",
+        "peekOfCode": "def server_loop():\n    # Создаём или перезаписываем файл с нужным размером\n    with open(SHARED_MEM_FILE, 'wb') as f:\n        f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        print(\"Server started, waiting for requests...\")\n        while True:",
         "detail": "main",
         "documentation": {}
     },
@@ -352,7 +334,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 100 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')",
         "detail": "main",
         "documentation": {}
     },
@@ -361,7 +343,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_SIZE = 100 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:",
         "detail": "main",
         "documentation": {}
     },
@@ -370,7 +352,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
+        "peekOfCode": "SEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]",
         "detail": "main",
         "documentation": {}
     },
@@ -379,7 +361,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        output = result.stdout.decode('utf-8').strip().split('\\n')",
+        "peekOfCode": "SEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]\ndef detect_file_creation():",
         "detail": "main",
         "documentation": {}
     },
