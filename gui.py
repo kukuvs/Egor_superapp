@@ -12,7 +12,15 @@ import sys
 logging.basicConfig(level=logging.DEBUG, format='[CLIENT] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 100 * 1024  # 10 KB
+SHARED_MEM_SIZE = 10 * 1024  # 10 KB
+
+FLAG_POS = 0
+FLAG_SIZE = 1
+DATA_POS = FLAG_POS + FLAG_SIZE
+
+FLAG_EMPTY = b'\x00'
+FLAG_REQUEST = b'\x01'
+FLAG_RESPONSE = b'\x02'
 
 def lock_file(f):
     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -31,22 +39,16 @@ class App(tk.Tk):
             logging.error("This client works only on Linux.")
             sys.exit(1)
 
-        # Проверяем, существует ли директория /tmp
         tmp_dir = os.path.dirname(SHARED_MEM_FILE)
         if not os.path.exists(tmp_dir):
-            logging.info(f"Directory {tmp_dir} does not exist, creating...")
             os.makedirs(tmp_dir, exist_ok=True)
 
-        # Проверяем, существует ли файл разделяемой памяти
         if not os.path.exists(SHARED_MEM_FILE):
-            logging.info(f"Shared memory file {SHARED_MEM_FILE} does not exist, creating...")
             with open(SHARED_MEM_FILE, 'wb') as f:
                 f.write(b'\x00' * SHARED_MEM_SIZE)
         else:
-            # Проверим размер файла, если меньше нужного — расширим
             size = os.path.getsize(SHARED_MEM_FILE)
             if size < SHARED_MEM_SIZE:
-                logging.info(f"Shared memory file size {size} less than required {SHARED_MEM_SIZE}, resizing...")
                 with open(SHARED_MEM_FILE, 'ab') as f:
                     f.write(b'\x00' * (SHARED_MEM_SIZE - size))
 
@@ -62,12 +64,28 @@ class App(tk.Tk):
 
         try:
             lock_file(self.mm_file)
-            self.mm.seek(0)
+            # Ждем, пока флаг станет пустым (0)
+            while True:
+                self.mm.seek(FLAG_POS)
+                flag = self.mm.read(FLAG_SIZE)
+                if flag == FLAG_EMPTY:
+                    break
+                unlock_file(self.mm_file)
+                time.sleep(0.05)
+                lock_file(self.mm_file)
+
+            # Записываем запрос
+            self.mm.seek(DATA_POS)
             self.mm.write(request_json.encode('utf-8'))
-            self.mm.write(b'\x00' * (SHARED_MEM_SIZE - len(request_json)))
+            self.mm.write(b'\x00' * (SHARED_MEM_SIZE - FLAG_SIZE - len(request_json)))
+
+            # Устанавливаем флаг запроса
+            self.mm.seek(FLAG_POS)
+            self.mm.write(FLAG_REQUEST)
             self.mm.flush()
             unlock_file(self.mm_file)
-            logging.debug("Request written and lock released")
+            logging.debug("Request written and flag set")
+
         except Exception as e:
             logging.error(f"Error writing request: {e}", exc_info=True)
             try:
@@ -76,25 +94,35 @@ class App(tk.Tk):
                 pass
             return {'error': str(e)}
 
-        # Ждем ответа с таймаутом
+        # Ждем, пока сервер установит флаг ответа
         timeout = 10  # секунд
-        interval = 0.1
+        interval = 0.05
         waited = 0
         while waited < timeout:
             try:
                 lock_file(self.mm_file)
-                self.mm.seek(0)
-                raw = self.mm.read(SHARED_MEM_SIZE)
-                raw = raw.split(b'\x00', 1)[0]
-                if raw and raw != request_json.encode('utf-8'):
+                self.mm.seek(FLAG_POS)
+                flag = self.mm.read(FLAG_SIZE)
+                if flag == FLAG_RESPONSE:
+                    # Читаем ответ
+                    self.mm.seek(DATA_POS)
+                    raw = self.mm.read(SHARED_MEM_SIZE - FLAG_SIZE)
+                    raw = raw.split(b'\x00', 1)[0]
                     response_json = raw.decode('utf-8')
+
+                    # Сбрасываем флаг в пустой
+                    self.mm.seek(FLAG_POS)
+                    self.mm.write(FLAG_EMPTY)
+                    self.mm.flush()
                     unlock_file(self.mm_file)
+
                     logging.debug(f"Received response JSON: {response_json}")
                     try:
                         response = json.loads(response_json)
                         return response
                     except Exception:
                         return {'error': 'Invalid JSON response'}
+
                 unlock_file(self.mm_file)
             except Exception as e:
                 logging.error(f"Error reading response: {e}", exc_info=True)

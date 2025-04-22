@@ -226,7 +226,7 @@
         "kind": 6,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            logging.error(\"This client works only on Linux.\")\n            sys.exit(1)\n        # Проверяем, существует ли директория /tmp",
+        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            logging.error(\"This client works only on Linux.\")\n            sys.exit(1)\n        tmp_dir = os.path.dirname(SHARED_MEM_FILE)",
         "detail": "gui",
         "documentation": {}
     },
@@ -253,7 +253,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 100 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nFLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
         "detail": "gui",
         "documentation": {}
     },
@@ -262,7 +262,61 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_SIZE = 100 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nFLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_POS",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "FLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_SIZE",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "FLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_POS",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "DATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_EMPTY",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "FLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_REQUEST",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "FLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_RESPONSE",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "FLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -352,7 +406,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def server_loop():\n    logging.info(\"Starting server loop\")\n    # Проверяем, существует ли директория /tmp\n    tmp_dir = os.path.dirname(SHARED_MEM_FILE)\n    if not os.path.exists(tmp_dir):\n        logging.info(f\"Directory {tmp_dir} does not exist, creating...\")\n        os.makedirs(tmp_dir, exist_ok=True)\n    # Создаём или перезаписываем файл с нужным размером\n    if not os.path.exists(SHARED_MEM_FILE):\n        logging.info(f\"Shared memory file {SHARED_MEM_FILE} does not exist, creating...\")",
+        "peekOfCode": "def server_loop():\n    logging.info(\"Starting server loop\")\n    # Проверка и создание файла разделяемой памяти\n    tmp_dir = os.path.dirname(SHARED_MEM_FILE)\n    if not os.path.exists(tmp_dir):\n        os.makedirs(tmp_dir, exist_ok=True)\n    if not os.path.exists(SHARED_MEM_FILE):\n        with open(SHARED_MEM_FILE, 'wb') as f:\n            f.write(b'\\x00' * SHARED_MEM_SIZE)\n    else:",
         "detail": "main",
         "documentation": {}
     },
@@ -361,7 +415,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 100 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nFLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):",
         "detail": "main",
         "documentation": {}
     },
@@ -370,7 +424,61 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_SIZE = 100 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nFLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_POS",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "FLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_SIZE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "FLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_POS",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "DATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_EMPTY",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "FLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_REQUEST",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "FLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "FLAG_RESPONSE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "FLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
         "detail": "main",
         "documentation": {}
     },

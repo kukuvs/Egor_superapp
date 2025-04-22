@@ -11,7 +11,16 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[SERVER] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 100 * 1024  # 10 KB
+SHARED_MEM_SIZE = 10 * 1024  # 10 KB
+
+FLAG_POS = 0  # позиция флага в mmap
+FLAG_SIZE = 1  # размер флага в байтах
+DATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных
+
+# Флаги состояния
+FLAG_EMPTY = b'\x00'  # Буфер пуст, клиент может писать запрос
+FLAG_REQUEST = b'\x01'  # Запрос записан, сервер может читать
+FLAG_RESPONSE = b'\x02'  # Ответ записан, клиент может читать
 
 def lock_file(f):
     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -107,22 +116,17 @@ def handle_request(request_json):
 def server_loop():
     logging.info("Starting server loop")
 
-    # Проверяем, существует ли директория /tmp
+    # Проверка и создание файла разделяемой памяти
     tmp_dir = os.path.dirname(SHARED_MEM_FILE)
     if not os.path.exists(tmp_dir):
-        logging.info(f"Directory {tmp_dir} does not exist, creating...")
         os.makedirs(tmp_dir, exist_ok=True)
 
-    # Создаём или перезаписываем файл с нужным размером
     if not os.path.exists(SHARED_MEM_FILE):
-        logging.info(f"Shared memory file {SHARED_MEM_FILE} does not exist, creating...")
         with open(SHARED_MEM_FILE, 'wb') as f:
             f.write(b'\x00' * SHARED_MEM_SIZE)
     else:
-        # Проверим размер файла, если меньше нужного — расширим
         size = os.path.getsize(SHARED_MEM_FILE)
         if size < SHARED_MEM_SIZE:
-            logging.info(f"Shared memory file size {size} less than required {SHARED_MEM_SIZE}, resizing...")
             with open(SHARED_MEM_FILE, 'ab') as f:
                 f.write(b'\x00' * (SHARED_MEM_SIZE - size))
 
@@ -132,34 +136,39 @@ def server_loop():
         logging.info("Server started, waiting for requests...")
 
         while True:
-            time.sleep(0.1)  # Пауза для снижения нагрузки
+            time.sleep(0.05)  # Небольшая пауза для снижения нагрузки
 
             try:
                 lock_file(f)
-                mm.seek(0)
-                raw = mm.read(SHARED_MEM_SIZE)
-                raw = raw.split(b'\x00', 1)[0]
-                if not raw:
-                    unlock_file(f)
-                    continue  # Нет запроса, ждем дальше
+                mm.seek(FLAG_POS)
+                flag = mm.read(FLAG_SIZE)
 
+                if flag != FLAG_REQUEST:
+                    # Нет запроса, отпускаем блокировку и ждем
+                    unlock_file(f)
+                    continue
+
+                # Читаем запрос
+                mm.seek(DATA_POS)
+                raw = mm.read(SHARED_MEM_SIZE - FLAG_SIZE)
+                raw = raw.split(b'\x00', 1)[0]
                 request_json = raw.decode('utf-8')
                 logging.debug(f"Received request JSON: {request_json}")
 
+                # Обрабатываем запрос
                 response_json = handle_request(request_json)
 
-                mm.seek(0)
+                # Записываем ответ
+                mm.seek(DATA_POS)
                 encoded = response_json.encode('utf-8')
-                if len(encoded) > SHARED_MEM_SIZE:
-                    logging.warning("Response truncated due to size limit")
-                    encoded = encoded[:SHARED_MEM_SIZE]
+                if len(encoded) > SHARED_MEM_SIZE - FLAG_SIZE:
+                    encoded = encoded[:SHARED_MEM_SIZE - FLAG_SIZE]
                 mm.write(encoded)
-                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+                mm.write(b'\x00' * (SHARED_MEM_SIZE - FLAG_SIZE - len(encoded)))
 
-                # Очищаем запрос, чтобы клиент понял, что ответ готов
-                mm.flush()
-                mm.seek(0)
-                mm.write(b'\x00' * SHARED_MEM_SIZE)
+                # Устанавливаем флаг, что ответ готов
+                mm.seek(FLAG_POS)
+                mm.write(FLAG_RESPONSE)
                 mm.flush()
 
                 unlock_file(f)
