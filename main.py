@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[SERVER] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 10 * 1024  # 10 KB
+SHARED_MEM_SIZE = 200 * 1024  # 10 KB
 
 FLAG_POS = 0  # позиция флага в mmap
 FLAG_SIZE = 1  # размер флага в байтах
