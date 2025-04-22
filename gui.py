@@ -5,27 +5,14 @@ import mmap
 import os
 import platform
 import time
-import fcntl
-import msvcrt
+import posix_ipc
+import sys
 
+SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
 SHARED_MEM_SIZE = 10 * 1024  # 10 KB
 
-if platform.system() == 'Windows':
-    SHARED_MEM_FILE = os.path.join(os.getenv('TEMP'), 'sysmon_shared_mem')
-else:
-    SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-
-def lock_file(f):
-    if platform.system() == 'Windows':
-        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)
-    else:
-        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-
-def unlock_file(f):
-    if platform.system() == 'Windows':
-        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)
-    else:
-        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+SEM_REQUEST_NAME = "/sysmon_request_sem"
+SEM_RESPONSE_NAME = "/sysmon_response_sem"
 
 class App(tk.Tk):
     def __init__(self):
@@ -34,48 +21,46 @@ class App(tk.Tk):
         self.geometry("900x700")
         self.create_widgets()
 
-    def send_request(self, command, data=None):
+        if platform.system().lower() != 'linux':
+            print("This client works only on Linux.")
+            sys.exit(1)
+
         if not os.path.exists(SHARED_MEM_FILE):
-            return {'error': 'Shared memory file not found'}
+            print("Shared memory file not found.")
+            sys.exit(1)
 
-        with open(SHARED_MEM_FILE, 'r+b') as f:
-            mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)
-            try:
-                lock_file(f)
-                request_data = {'command': command}
-                if data:
-                    request_data['data'] = data
-                request_json = json.dumps(request_data, ensure_ascii=False)
+        self.mm_file = open(SHARED_MEM_FILE, 'r+b')
+        self.mm = mmap.mmap(self.mm_file.fileno(), SHARED_MEM_SIZE)
 
-                # Записываем запрос
-                mm.seek(0)
-                mm.write(request_json.encode('utf-8'))
-                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(request_json)))
-                mm.flush()
+        self.sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME)
+        self.sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME)
 
-                unlock_file(f)
+    def send_request(self, command, data=None):
+        request_data = {'command': command}
+        if data:
+            request_data['data'] = data
+        request_json = json.dumps(request_data, ensure_ascii=False)
 
-                # Ждем ответа (polling)
-                for _ in range(100):  # максимум 10 секунд (100 * 0.1)
-                    time.sleep(0.1)
-                    lock_file(f)
-                    mm.seek(0)
-                    raw = mm.read(SHARED_MEM_SIZE)
-                    raw = raw.split(b'\x00', 1)[0]
-                    unlock_file(f)
-                    if raw and raw != request_json.encode('utf-8'):
-                        try:
-                            response_json = raw.decode('utf-8')
-                            response = json.loads(response_json)
-                            return response
-                        except Exception:
-                            return {'error': 'Invalid response format'}
-                return {'error': 'Timeout waiting for response'}
-            except Exception as e:
-                return {'error': str(e)}
+        self.mm.seek(0)
+        self.mm.write(request_json.encode('utf-8'))
+        self.mm.write(b'\x00' * (SHARED_MEM_SIZE - len(request_json)))
 
-    # Далее методы get_processes, get_network_config и т.д. из вашего gui.py,
-    # только вызывают self.send_request с нужной командой
+        self.sem_request.release()
+
+        if not self.sem_response.acquire(timeout=10):
+            return {'error': 'Timeout waiting for response'}
+
+        self.mm.seek(0)
+        raw = self.mm.read(SHARED_MEM_SIZE)
+        raw = raw.split(b'\x00', 1)[0]
+        response_json = raw.decode('utf-8')
+
+        try:
+            response = json.loads(response_json)
+        except json.JSONDecodeError:
+            response = {'error': 'Invalid JSON response'}
+
+        return response
 
     def create_widgets(self):
         notebook = ttk.Notebook(self)
@@ -85,17 +70,21 @@ class App(tk.Tk):
         notebook.add(self.process_frame, text="Processes")
         self.create_process_tab()
 
+        self.gpu_frame = ttk.Frame(notebook)
+        notebook.add(self.gpu_frame, text="GPU Info")
+        self.create_gpu_tab()
+
+        self.file_creation_frame = ttk.Frame(notebook)
+        notebook.add(self.file_creation_frame, text="File Creation")
+        self.create_file_creation_tab()
+
+        self.uptime_frame = ttk.Frame(notebook)
+        notebook.add(self.uptime_frame, text="Uptime")
+        self.create_uptime_tab()
+
         self.network_frame = ttk.Frame(notebook)
         notebook.add(self.network_frame, text="Network Config")
         self.create_network_tab()
-
-        self.wireless_frame = ttk.Frame(notebook)
-        notebook.add(self.wireless_frame, text="Wireless Status")
-        self.create_wireless_tab()
-
-        self.screen_frame = ttk.Frame(notebook)
-        notebook.add(self.screen_frame, text="Screen Resolution")
-        self.create_screen_tab()
 
         self.terminal_frame = ttk.Frame(notebook)
         notebook.add(self.terminal_frame, text="Terminal")
@@ -119,26 +108,33 @@ class App(tk.Tk):
         self.process_table.configure(yscroll=scrollbar.set)
         scrollbar.pack(side='right', fill='y')
 
+    def create_gpu_tab(self):
+        btn = ttk.Button(self.gpu_frame, text="Get GPU Info", command=self.get_gpu_info)
+        btn.pack(pady=5)
+
+        self.gpu_text = scrolledtext.ScrolledText(self.gpu_frame, wrap=tk.WORD)
+        self.gpu_text.pack(expand=True, fill='both', padx=10, pady=10)
+
+    def create_file_creation_tab(self):
+        btn = ttk.Button(self.file_creation_frame, text="Detect File Creation", command=self.detect_file_creation)
+        btn.pack(pady=5)
+
+        self.file_creation_text = scrolledtext.ScrolledText(self.file_creation_frame, wrap=tk.WORD)
+        self.file_creation_text.pack(expand=True, fill='both', padx=10, pady=10)
+
+    def create_uptime_tab(self):
+        btn = ttk.Button(self.uptime_frame, text="Get Uptime", command=self.get_uptime)
+        btn.pack(pady=5)
+
+        self.uptime_label = ttk.Label(self.uptime_frame, text="", font=("Arial", 14))
+        self.uptime_label.pack(pady=20)
+
     def create_network_tab(self):
         btn = ttk.Button(self.network_frame, text="Get Network Config", command=self.get_network_config)
         btn.pack(pady=5)
 
         self.network_text = scrolledtext.ScrolledText(self.network_frame, wrap=tk.WORD)
         self.network_text.pack(expand=True, fill='both', padx=10, pady=10)
-
-    def create_wireless_tab(self):
-        btn = ttk.Button(self.wireless_frame, text="Get Wireless Status", command=self.get_wireless_status)
-        btn.pack(pady=5)
-
-        self.wireless_text = scrolledtext.ScrolledText(self.wireless_frame, wrap=tk.WORD)
-        self.wireless_text.pack(expand=True, fill='both', padx=10, pady=10)
-
-    def create_screen_tab(self):
-        btn = ttk.Button(self.screen_frame, text="Get Screen Resolution", command=self.get_screen_resolution)
-        btn.pack(pady=5)
-
-        self.screen_label = ttk.Label(self.screen_frame, text="", font=("Arial", 14))
-        self.screen_label.pack(pady=20)
 
     def create_terminal_tab(self):
         label = ttk.Label(self.terminal_frame, text="Enter Command:")
@@ -165,51 +161,6 @@ class App(tk.Tk):
             name = proc.get('name', '')
             user = proc.get('username', '')
             self.process_table.insert('', 'end', values=(pid, name, user))
-
-    def get_network_config(self):
-        response = self.send_request('get_network_config')
-        if 'error' in response:
-            self.network_text.delete(1.0, tk.END)
-            self.network_text.insert(tk.END, f"Error: {response['error']}")
-            return
-        self.network_text.delete(1.0, tk.END)
-        self.network_text.insert(tk.END, response)
-
-    def get_wireless_status(self):
-        response = self.send_request('get_wireless_status')
-        if 'error' in response:
-            self.wireless_text.delete(1.0, tk.END)
-            self.wireless_text.insert(tk.END, f"Error: {response['error']}")
-            return
-        import pprint
-        pretty = pprint.pformat(response, indent=2, width=80)
-        self.wireless_text.delete(1.0, tk.END)
-        self.wireless_text.insert(tk.END, pretty)
-
-    def get_screen_resolution(self):
-        response = self.send_request('get_screen_resolution')
-        if 'error' in response:
-            self.screen_label.config(text=f"Error: {response['error']}")
-            return
-        self.screen_label.config(text=f"Screen resolution: {response[0]} x {response[1]}")
-
-    def run_command(self):
-        command = self.command_entry.get()
-        response = self.send_request('execute_command', data=command)
-        self.output_text.delete(1.0, tk.END)
-        if isinstance(response, dict) and 'error' in response:
-            self.output_text.insert(tk.END, f"Error: {response['error']}")
-        else:
-            self.output_text.insert(tk.END, response)
-
-    def show_error(self, widget, message):
-        if isinstance(widget, ttk.Treeview):
-            for row in widget.get_children():
-                widget.delete(row)
-            widget.insert('', 'end', values=(message,))
-        else:
-            widget.delete(1.0, tk.END)
-            widget.insert(tk.END, message)
 
     def get_gpu_info(self):
         response = self.send_request('get_gpu_info')
@@ -242,26 +193,32 @@ class App(tk.Tk):
             return
         self.uptime_label.config(text=str(response))
 
-    def create_gpu_tab(self):
-        btn = ttk.Button(self.gpu_frame, text="Get GPU Info", command=self.get_gpu_info)
-        btn.pack(pady=5)
+    def get_network_config(self):
+        response = self.send_request('get_network_config')
+        if 'error' in response:
+            self.network_text.delete(1.0, tk.END)
+            self.network_text.insert(tk.END, f"Error: {response['error']}")
+            return
+        self.network_text.delete(1.0, tk.END)
+        self.network_text.insert(tk.END, response)
 
-        self.gpu_text = scrolledtext.ScrolledText(self.gpu_frame, wrap=tk.WORD)
-        self.gpu_text.pack(expand=True, fill='both', padx=10, pady=10)
+    def run_command(self):
+        command = self.command_entry.get()
+        response = self.send_request('execute_command', data=command)
+        self.output_text.delete(1.0, tk.END)
+        if isinstance(response, dict) and 'error' in response:
+            self.output_text.insert(tk.END, f"Error: {response['error']}")
+        else:
+            self.output_text.insert(tk.END, response)
 
-    def create_file_creation_tab(self):
-        btn = ttk.Button(self.file_creation_frame, text="Detect File Creation", command=self.detect_file_creation)
-        btn.pack(pady=5)
-
-        self.file_creation_text = scrolledtext.ScrolledText(self.file_creation_frame, wrap=tk.WORD)
-        self.file_creation_text.pack(expand=True, fill='both', padx=10, pady=10)
-
-    def create_uptime_tab(self):
-        btn = ttk.Button(self.uptime_frame, text="Get Uptime", command=self.get_uptime)
-        btn.pack(pady=5)
-
-        self.uptime_label = ttk.Label(self.uptime_frame, text="", font=("Arial", 14))
-        self.uptime_label.pack(pady=20)
+    def show_error(self, widget, message):
+        if isinstance(widget, ttk.Treeview):
+            for row in widget.get_children():
+                widget.delete(row)
+            widget.insert('', 'end', values=(message,))
+        else:
+            widget.delete(1.0, tk.END)
+            widget.insert(tk.END, message)
 
 if __name__ == "__main__":
     app = App()

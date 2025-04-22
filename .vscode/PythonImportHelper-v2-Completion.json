@@ -105,21 +105,12 @@
         "documentation": {}
     },
     {
-        "label": "fcntl",
+        "label": "posix_ipc",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "fcntl",
-        "description": "fcntl",
-        "detail": "fcntl",
-        "documentation": {}
-    },
-    {
-        "label": "msvcrt",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "msvcrt",
-        "description": "msvcrt",
-        "detail": "msvcrt",
+        "importPath": "posix_ipc",
+        "description": "posix_ipc",
+        "detail": "posix_ipc",
         "documentation": {}
     },
     {
@@ -244,25 +235,16 @@
         "kind": 6,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n    def send_request(self, command, data=None):\n        if not os.path.exists(SHARED_MEM_FILE):\n            return {'error': 'Shared memory file not found'}\n        with open(SHARED_MEM_FILE, 'r+b') as f:",
+        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            print(\"This client works only on Linux.\")\n            sys.exit(1)\n        if not os.path.exists(SHARED_MEM_FILE):",
         "detail": "gui",
         "documentation": {}
     },
     {
-        "label": "lock_file",
-        "kind": 2,
+        "label": "SHARED_MEM_FILE",
+        "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "def lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
-        "detail": "gui",
-        "documentation": {}
-    },
-    {
-        "label": "unlock_file",
-        "kind": 2,
-        "importPath": "gui",
-        "description": "gui",
-        "peekOfCode": "def unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()",
         "detail": "gui",
         "documentation": {}
     },
@@ -271,26 +253,26 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nif platform.system() == 'Windows':\n    SHARED_MEM_FILE = os.path.join(os.getenv('TEMP'), 'sysmon_shared_mem')\nelse:\n    SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\ndef lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':",
         "detail": "gui",
         "documentation": {}
     },
     {
-        "label": "lock_file",
-        "kind": 2,
-        "importPath": "main",
-        "description": "main",
-        "peekOfCode": "def lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
-        "detail": "main",
+        "label": "SEM_REQUEST_NAME",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "SEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            print(\"This client works only on Linux.\")",
+        "detail": "gui",
         "documentation": {}
     },
     {
-        "label": "unlock_file",
-        "kind": 2,
-        "importPath": "main",
-        "description": "main",
-        "peekOfCode": "def unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes",
-        "detail": "main",
+        "label": "SEM_RESPONSE_NAME",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "SEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            print(\"This client works only on Linux.\")\n            sys.exit(1)",
+        "detail": "gui",
         "documentation": {}
     },
     {
@@ -298,43 +280,34 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_wireless_status():\n    return psutil.net_if_stats()\ndef get_network_settings():\n    return netifaces.interfaces()\ndef get_screen_resolution():",
+        "peekOfCode": "def get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        output = result.stdout.decode('utf-8').strip().split('\\n')\n        return output",
         "detail": "main",
         "documentation": {}
     },
     {
-        "label": "get_wireless_status",
+        "label": "get_gpu_info",
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_wireless_status():\n    return psutil.net_if_stats()\ndef get_network_settings():\n    return netifaces.interfaces()\ndef get_screen_resolution():\n    screen = screeninfo.get_monitors()[0]\n    return screen.width, screen.height\ndef execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)",
+        "peekOfCode": "def get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        output = result.stdout.decode('utf-8').strip().split('\\n')\n        return output\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]\ndef detect_file_creation():\n    home = os.path.expanduser(\"~\")\n    recent_files = []",
         "detail": "main",
         "documentation": {}
     },
     {
-        "label": "get_network_settings",
+        "label": "detect_file_creation",
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_network_settings():\n    return netifaces.interfaces()\ndef get_screen_resolution():\n    screen = screeninfo.get_monitors()[0]\n    return screen.width, screen.height\ndef execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        try:\n            output = result.stdout.decode('cp866')",
+        "peekOfCode": "def detect_file_creation():\n    home = os.path.expanduser(\"~\")\n    recent_files = []\n    now = time.time()\n    try:\n        for root, dirs, files in os.walk(home):\n            for name in files:\n                path = os.path.join(root, name)\n                try:\n                    ctime = os.path.getctime(path)",
         "detail": "main",
         "documentation": {}
     },
     {
-        "label": "get_screen_resolution",
+        "label": "get_uptime",
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_screen_resolution():\n    screen = screeninfo.get_monitors()[0]\n    return screen.width, screen.height\ndef execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        try:\n            output = result.stdout.decode('cp866')\n        except UnicodeDecodeError:\n            output = result.stdout.decode('cp866', errors='replace')",
-        "detail": "main",
-        "documentation": {}
-    },
-    {
-        "label": "execute_command",
-        "kind": 2,
-        "importPath": "main",
-        "description": "main",
-        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        try:\n            output = result.stdout.decode('cp866')\n        except UnicodeDecodeError:\n            output = result.stdout.decode('cp866', errors='replace')\n        return output\n    except subprocess.CalledProcessError as e:\n        try:",
+        "peekOfCode": "def get_uptime():\n    try:\n        with open('/proc/uptime', 'r') as f:\n            uptime_seconds = float(f.readline().split()[0])\n        hours = int(uptime_seconds // 3600)\n        minutes = int((uptime_seconds % 3600) // 60)\n        seconds = int(uptime_seconds % 60)\n        return f\"Uptime: {hours}h {minutes}m {seconds}s\"\n    except Exception as e:\n        return f\"Error getting uptime: {e}\"",
         "detail": "main",
         "documentation": {}
     },
@@ -343,7 +316,16 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_network_config():\n    try:\n        system = platform.system().lower()\n        if system == 'windows':\n            cmd = 'ipconfig /all'\n            encoding = 'cp866'\n        else:\n            try:\n                subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n                cmd = 'ifconfig -a'",
+        "peekOfCode": "def get_network_config():\n    try:\n        try:\n            subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n            cmd = 'ifconfig -a'\n        except Exception:\n            cmd = 'ip addr'\n        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        output = result.stdout.decode('utf-8', errors='replace')\n        return output",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "execute_command",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        output = result.stdout.decode('utf-8', errors='replace')\n        return output\n    except subprocess.CalledProcessError as e:\n        error_output = e.stderr.decode('utf-8', errors='replace')\n        return error_output\ndef handle_request(request_json):\n    try:",
         "detail": "main",
         "documentation": {}
     },
@@ -352,7 +334,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def handle_request(request_json):\n    try:\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        if cmd == 'get_processes':\n            response = get_processes()\n        elif cmd == 'get_wireless_status':\n            response = {k: v._asdict() for k, v in get_wireless_status().items()}\n        elif cmd == 'get_network_config':\n            response = get_network_config()",
+        "peekOfCode": "def handle_request(request_json):\n    try:\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        if cmd == 'get_processes':\n            response = get_processes()\n        elif cmd == 'get_gpu_info':\n            response = get_gpu_info()\n        elif cmd == 'detect_file_creation':\n            response = detect_file_creation()",
         "detail": "main",
         "documentation": {}
     },
@@ -361,7 +343,16 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def server_loop():\n    # Создаем файл, если не существует\n    if not os.path.exists(SHARED_MEM_FILE):\n        with open(SHARED_MEM_FILE, 'wb') as f:\n            f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        print(\"Server started, waiting for requests...\")\n        while True:\n            # Ждем, пока клиент запишет запрос (простой polling)",
+        "peekOfCode": "def server_loop():\n    if not os.path.exists(SHARED_MEM_FILE):\n        with open(SHARED_MEM_FILE, 'wb') as f:\n            f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        print(\"Server started, waiting for requests...\")\n        while True:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "SHARED_MEM_FILE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():",
         "detail": "main",
         "documentation": {}
     },
@@ -370,7 +361,25 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nif platform.system() == 'Windows':\n    SHARED_MEM_FILE = os.path.join(os.getenv('TEMP'), 'sysmon_shared_mem')\nelse:\n    SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\ndef lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "SEM_REQUEST_NAME",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "SEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "SEM_RESPONSE_NAME",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "SEM_RESPONSE_NAME = \"/sysmon_response_sem\"\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        output = result.stdout.decode('utf-8').strip().split('\\n')",
         "detail": "main",
         "documentation": {}
     },

@@ -7,28 +7,13 @@ import subprocess
 import mmap
 import os
 import time
-import fcntl  # для Linux
-import msvcrt  # для Windows
-import sys
+import posix_ipc
 
+SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
 SHARED_MEM_SIZE = 10 * 1024  # 10 KB
 
-if platform.system() == 'Windows':
-    SHARED_MEM_FILE = os.path.join(os.getenv('TEMP'), 'sysmon_shared_mem')
-else:
-    SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-
-def lock_file(f):
-    if platform.system() == 'Windows':
-        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)
-    else:
-        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-
-def unlock_file(f):
-    if platform.system() == 'Windows':
-        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)
-    else:
-        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+SEM_REQUEST_NAME = "/sysmon_request_sem"
+SEM_RESPONSE_NAME = "/sysmon_response_sem"
 
 def get_processes():
     processes = []
@@ -36,53 +21,67 @@ def get_processes():
         processes.append(proc.info)
     return processes
 
-def get_wireless_status():
-    return psutil.net_if_stats()
+def get_gpu_info():
+    try:
+        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)
+        output = result.stdout.decode('utf-8').strip().split('\n')
+        return output
+    except Exception as e:
+        return [f"Error getting GPU info: {e}"]
 
-def get_network_settings():
-    return netifaces.interfaces()
+def detect_file_creation():
+    home = os.path.expanduser("~")
+    recent_files = []
+    now = time.time()
+    try:
+        for root, dirs, files in os.walk(home):
+            for name in files:
+                path = os.path.join(root, name)
+                try:
+                    ctime = os.path.getctime(path)
+                    if now - ctime <= 60:
+                        recent_files.append(path)
+                except Exception:
+                    continue
+        if recent_files:
+            return recent_files
+        else:
+            return ["No files created in the last 60 seconds"]
+    except Exception as e:
+        return [f"Error detecting file creation: {e}"]
 
-def get_screen_resolution():
-    screen = screeninfo.get_monitors()[0]
-    return screen.width, screen.height
+def get_uptime():
+    try:
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+        hours = int(uptime_seconds // 3600)
+        minutes = int((uptime_seconds % 3600) // 60)
+        seconds = int(uptime_seconds % 60)
+        return f"Uptime: {hours}h {minutes}m {seconds}s"
+    except Exception as e:
+        return f"Error getting uptime: {e}"
+
+def get_network_config():
+    try:
+        try:
+            subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            cmd = 'ifconfig -a'
+        except Exception:
+            cmd = 'ip addr'
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = result.stdout.decode('utf-8', errors='replace')
+        return output
+    except Exception as e:
+        return f"Error getting network config: {e}"
 
 def execute_command(command):
     try:
         result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        try:
-            output = result.stdout.decode('cp866')
-        except UnicodeDecodeError:
-            output = result.stdout.decode('cp866', errors='replace')
+        output = result.stdout.decode('utf-8', errors='replace')
         return output
     except subprocess.CalledProcessError as e:
-        try:
-            error_output = e.stderr.decode('cp866')
-        except UnicodeDecodeError:
-            error_output = e.stderr.decode('cp866', errors='replace')
+        error_output = e.stderr.decode('utf-8', errors='replace')
         return error_output
-
-def get_network_config():
-    try:
-        system = platform.system().lower()
-        if system == 'windows':
-            cmd = 'ipconfig /all'
-            encoding = 'cp866'
-        else:
-            try:
-                subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-                cmd = 'ifconfig -a'
-            except Exception:
-                cmd = 'ip addr'
-            encoding = 'utf-8'
-
-        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        try:
-            output = result.stdout.decode(encoding)
-        except UnicodeDecodeError:
-            output = result.stdout.decode(encoding, errors='replace')
-        return output
-    except Exception as e:
-        return f"Error getting network config: {e}"
 
 def handle_request(request_json):
     try:
@@ -90,14 +89,14 @@ def handle_request(request_json):
         cmd = request.get('command')
         if cmd == 'get_processes':
             response = get_processes()
-        elif cmd == 'get_wireless_status':
-            response = {k: v._asdict() for k, v in get_wireless_status().items()}
+        elif cmd == 'get_gpu_info':
+            response = get_gpu_info()
+        elif cmd == 'detect_file_creation':
+            response = detect_file_creation()
+        elif cmd == 'get_uptime':
+            response = get_uptime()
         elif cmd == 'get_network_config':
             response = get_network_config()
-        elif cmd == 'get_network_settings':
-            response = get_network_settings()
-        elif cmd == 'get_screen_resolution':
-            response = get_screen_resolution()
         elif cmd == 'execute_command':
             command = request.get('data', '')
             response = execute_command(command)
@@ -108,44 +107,35 @@ def handle_request(request_json):
     return json.dumps(response, ensure_ascii=False)
 
 def server_loop():
-    # Создаем файл, если не существует
     if not os.path.exists(SHARED_MEM_FILE):
         with open(SHARED_MEM_FILE, 'wb') as f:
             f.write(b'\x00' * SHARED_MEM_SIZE)
 
     with open(SHARED_MEM_FILE, 'r+b') as f:
         mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)
+        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)
+        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)
+
         print("Server started, waiting for requests...")
+
         while True:
-            # Ждем, пока клиент запишет запрос (простой polling)
-            time.sleep(0.1)
-            try:
-                lock_file(f)
-                mm.seek(0)
-                raw = mm.read(SHARED_MEM_SIZE)
-                raw = raw.split(b'\x00', 1)[0]
-                if not raw:
-                    unlock_file(f)
-                    continue
-                request_json = raw.decode('utf-8')
+            sem_request.acquire()
 
-                # Обрабатываем запрос
-                response_json = handle_request(request_json)
+            mm.seek(0)
+            raw = mm.read(SHARED_MEM_SIZE)
+            raw = raw.split(b'\x00', 1)[0]
+            request_json = raw.decode('utf-8')
 
-                # Записываем ответ
-                mm.seek(0)
-                mm.write(response_json.encode('utf-8'))
-                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(response_json)))
+            response_json = handle_request(request_json)
 
-                # Очищаем запрос (чтобы клиент знал, что ответ готов)
-                mm.flush()
-                mm.seek(0)
-                mm.write(b'\x00' * SHARED_MEM_SIZE)
-                mm.flush()
-                unlock_file(f)
-            except Exception as e:
-                print(f"Error: {e}")
-                unlock_file(f)
+            mm.seek(0)
+            mm.write(response_json.encode('utf-8'))
+            mm.write(b'\x00' * (SHARED_MEM_SIZE - len(response_json)))
+
+            sem_response.release()
 
 if __name__ == "__main__":
+    if platform.system().lower() != 'linux':
+        print("This server works only on Linux.")
+        exit(1)
     server_loop()
