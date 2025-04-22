@@ -6,6 +6,9 @@ import platform
 import psutil
 import subprocess
 import posix_ipc
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='[SERVER] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
 SHARED_MEM_SIZE = 10 * 1024  # 10 KB
@@ -73,8 +76,10 @@ def execute_command(command):
 
 def handle_request(request_json):
     try:
+        logging.debug(f"Handling request JSON: {request_json}")
         request = json.loads(request_json)
         cmd = request.get('command')
+        logging.debug(f"Command received: {cmd}")
         if cmd == 'get_processes':
             response = get_processes()
         elif cmd == 'get_gpu_info':
@@ -90,39 +95,63 @@ def handle_request(request_json):
         else:
             response = {'error': 'Unknown command'}
     except Exception as e:
+        logging.error(f"Exception in handle_request: {e}", exc_info=True)
         response = {'error': str(e)}
-    return json.dumps(response, ensure_ascii=False)
+    response_json = json.dumps(response, ensure_ascii=False)
+    logging.debug(f"Response JSON: {response_json}")
+    return response_json
 
 def server_loop():
+    logging.info("Starting server loop")
+
     # Создаём или перезаписываем файл с нужным размером
     with open(SHARED_MEM_FILE, 'wb') as f:
         f.write(b'\x00' * SHARED_MEM_SIZE)
+    logging.info(f"Shared memory file created/reset: {SHARED_MEM_FILE}")
 
     with open(SHARED_MEM_FILE, 'r+b') as f:
         mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)
         sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)
         sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)
 
-        print("Server started, waiting for requests...")
+        logging.info("Server started, waiting for requests...")
 
         while True:
-            sem_request.acquire()  # Ждем запроса
+            logging.debug("Waiting for sem_request.acquire()")
+            sem_request.acquire()
+            logging.debug("sem_request acquired")
 
-            mm.seek(0)
-            raw = mm.read(SHARED_MEM_SIZE)
-            raw = raw.split(b'\x00', 1)[0]
-            request_json = raw.decode('utf-8')
+            try:
+                mm.seek(0)
+                raw = mm.read(SHARED_MEM_SIZE)
+                raw = raw.split(b'\x00', 1)[0]
+                request_json = raw.decode('utf-8')
+                logging.debug(f"Received request JSON: {request_json}")
 
-            response_json = handle_request(request_json)
+                response_json = handle_request(request_json)
 
-            mm.seek(0)
-            encoded = response_json.encode('utf-8')
-            if len(encoded) > SHARED_MEM_SIZE:
-                encoded = encoded[:SHARED_MEM_SIZE]
-            mm.write(encoded)
-            mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+                mm.seek(0)
+                encoded = response_json.encode('utf-8')
+                if len(encoded) > SHARED_MEM_SIZE:
+                    logging.warning("Response truncated due to size limit")
+                    encoded = encoded[:SHARED_MEM_SIZE]
+                mm.write(encoded)
+                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+                logging.debug("Response written to shared memory")
 
-            sem_response.release()  # Сигнал клиенту, что ответ готов
+            except Exception as e:
+                logging.error(f"Error processing request: {e}", exc_info=True)
+                error_response = json.dumps({'error': f'Server error: {str(e)}'}, ensure_ascii=False)
+                mm.seek(0)
+                encoded = error_response.encode('utf-8')
+                if len(encoded) > SHARED_MEM_SIZE:
+                    encoded = encoded[:SHARED_MEM_SIZE]
+                mm.write(encoded)
+                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+
+            finally:
+                sem_response.release()
+                logging.debug("sem_response released")
 
 if __name__ == "__main__":
     if platform.system().lower() != 'linux':

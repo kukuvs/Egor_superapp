@@ -114,6 +114,15 @@
         "documentation": {}
     },
     {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
         "label": "psutil",
         "kind": 6,
         "isExtraImport": true,
@@ -217,7 +226,7 @@
         "kind": 6,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            print(\"This client works only on Linux.\")\n            sys.exit(1)\n        if not os.path.exists(SHARED_MEM_FILE):",
+        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            logging.error(\"This client works only on Linux.\")\n            sys.exit(1)\n        if not os.path.exists(SHARED_MEM_FILE):",
         "detail": "gui",
         "documentation": {}
     },
@@ -226,7 +235,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 100 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()",
         "detail": "gui",
         "documentation": {}
     },
@@ -235,7 +244,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':",
+        "peekOfCode": "SHARED_MEM_SIZE = 100 * 1024  # 10 KB\nSEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':",
         "detail": "gui",
         "documentation": {}
     },
@@ -244,7 +253,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            print(\"This client works only on Linux.\")",
+        "peekOfCode": "SEM_REQUEST_NAME = \"/sysmon_request_sem\"\nSEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            logging.error(\"This client works only on Linux.\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -253,7 +262,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            print(\"This client works only on Linux.\")\n            sys.exit(1)",
+        "peekOfCode": "SEM_RESPONSE_NAME = \"/sysmon_response_sem\"\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n        if platform.system().lower() != 'linux':\n            logging.error(\"This client works only on Linux.\")\n            sys.exit(1)",
         "detail": "gui",
         "documentation": {}
     },
@@ -307,7 +316,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except subprocess.CalledProcessError as e:\n        return e.stderr.decode('utf-8', errors='replace')\ndef handle_request(request_json):\n    try:\n        request = json.loads(request_json)\n        cmd = request.get('command')",
+        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except subprocess.CalledProcessError as e:\n        return e.stderr.decode('utf-8', errors='replace')\ndef handle_request(request_json):\n    try:\n        logging.debug(f\"Handling request JSON: {request_json}\")\n        request = json.loads(request_json)",
         "detail": "main",
         "documentation": {}
     },
@@ -316,7 +325,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def handle_request(request_json):\n    try:\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        if cmd == 'get_processes':\n            response = get_processes()\n        elif cmd == 'get_gpu_info':\n            response = get_gpu_info()\n        elif cmd == 'detect_file_creation':\n            response = detect_file_creation()",
+        "peekOfCode": "def handle_request(request_json):\n    try:\n        logging.debug(f\"Handling request JSON: {request_json}\")\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        logging.debug(f\"Command received: {cmd}\")\n        if cmd == 'get_processes':\n            response = get_processes()\n        elif cmd == 'get_gpu_info':\n            response = get_gpu_info()",
         "detail": "main",
         "documentation": {}
     },
@@ -325,7 +334,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def server_loop():\n    # Создаём или перезаписываем файл с нужным размером\n    with open(SHARED_MEM_FILE, 'wb') as f:\n        f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        print(\"Server started, waiting for requests...\")\n        while True:",
+        "peekOfCode": "def server_loop():\n    logging.info(\"Starting server loop\")\n    # Создаём или перезаписываем файл с нужным размером\n    with open(SHARED_MEM_FILE, 'wb') as f:\n        f.write(b'\\x00' * SHARED_MEM_SIZE)\n    logging.info(f\"Shared memory file created/reset: {SHARED_MEM_FILE}\")\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)",
         "detail": "main",
         "documentation": {}
     },

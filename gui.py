@@ -7,9 +7,12 @@ import platform
 import time
 import posix_ipc
 import sys
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='[CLIENT] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 10 * 1024  # 10 KB
+SHARED_MEM_SIZE = 100 * 1024  # 10 KB
 
 SEM_REQUEST_NAME = "/sysmon_request_sem"
 SEM_RESPONSE_NAME = "/sysmon_response_sem"
@@ -22,11 +25,11 @@ class App(tk.Tk):
         self.create_widgets()
 
         if platform.system().lower() != 'linux':
-            print("This client works only on Linux.")
+            logging.error("This client works only on Linux.")
             sys.exit(1)
 
         if not os.path.exists(SHARED_MEM_FILE):
-            print("Shared memory file not found.")
+            logging.error("Shared memory file not found.")
             sys.exit(1)
 
         self.mm_file = open(SHARED_MEM_FILE, 'r+b')
@@ -36,31 +39,52 @@ class App(tk.Tk):
         self.sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME)
 
     def send_request(self, command, data=None):
+        logging.debug(f"Sending request: command={command}, data={data}")
         request_data = {'command': command}
         if data:
             request_data['data'] = data
         request_json = json.dumps(request_data, ensure_ascii=False)
 
-        self.mm.seek(0)
-        self.mm.write(request_json.encode('utf-8'))
-        self.mm.write(b'\x00' * (SHARED_MEM_SIZE - len(request_json)))
-
-        self.sem_request.release()
-
-        if not self.sem_response.acquire(timeout=1000):
-            return {'error': 'Timeout waiting for response'}
-
-        self.mm.seek(0)
-        raw = self.mm.read(SHARED_MEM_SIZE)
-        raw = raw.split(b'\x00', 1)[0]
-        response_json = raw.decode('utf-8')
+        try:
+            self.mm.seek(0)
+            self.mm.write(request_json.encode('utf-8'))
+            self.mm.write(b'\x00' * (SHARED_MEM_SIZE - len(request_json)))
+            logging.debug("Request written to shared memory")
+        except Exception as e:
+            logging.error(f"Error writing request to shared memory: {e}", exc_info=True)
+            return {'error': str(e)}
 
         try:
-            response = json.loads(response_json)
-        except json.JSONDecodeError:
-            response = {'error': 'Invalid JSON response'}
+            self.sem_request.release()
+            logging.debug("sem_request released")
+        except Exception as e:
+            logging.error(f"Error releasing sem_request: {e}", exc_info=True)
+            return {'error': str(e)}
 
-        return response
+        try:
+            logging.debug("Waiting for sem_response.acquire()")
+            if not self.sem_response.acquire(timeout=10):
+                logging.error("Timeout waiting for response semaphore")
+                return {'error': 'Timeout waiting for response'}
+            logging.debug("sem_response acquired")
+        except Exception as e:
+            logging.error(f"Error acquiring sem_response: {e}", exc_info=True)
+            return {'error': str(e)}
+
+        try:
+            self.mm.seek(0)
+            raw = self.mm.read(SHARED_MEM_SIZE)
+            raw = raw.split(b'\x00', 1)[0]
+            response_json = raw.decode('utf-8')
+            logging.debug(f"Received response JSON: {response_json}")
+            response = json.loads(response_json)
+            return response
+        except json.JSONDecodeError:
+            logging.error("Invalid JSON response")
+            return {'error': 'Invalid JSON response'}
+        except Exception as e:
+            logging.error(f"Error reading response: {e}", exc_info=True)
+            return {'error': str(e)}
 
     def create_widgets(self):
         notebook = ttk.Notebook(self)
