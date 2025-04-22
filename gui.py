@@ -63,7 +63,7 @@ class App(tk.Tk):
 
         try:
             logging.debug("Waiting for sem_response.acquire()")
-            if not self.sem_response.acquire(timeout=10):
+            if not self.sem_response.acquire(timeout=50):
                 logging.error("Timeout waiting for response semaphore")
                 return {'error': 'Timeout waiting for response'}
             logging.debug("sem_response acquired")
