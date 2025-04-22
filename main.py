@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[SERVER] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 200 * 1024  # 10 KB
+SHARED_MEM_SIZE = 100 * 1024  # 10 KB
 
 def lock_file(f):
     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -107,10 +107,24 @@ def handle_request(request_json):
 def server_loop():
     logging.info("Starting server loop")
 
+    # Проверяем, существует ли директория /tmp
+    tmp_dir = os.path.dirname(SHARED_MEM_FILE)
+    if not os.path.exists(tmp_dir):
+        logging.info(f"Directory {tmp_dir} does not exist, creating...")
+        os.makedirs(tmp_dir, exist_ok=True)
+
     # Создаём или перезаписываем файл с нужным размером
-    with open(SHARED_MEM_FILE, 'wb') as f:
-        f.write(b'\x00' * SHARED_MEM_SIZE)
-    logging.info(f"Shared memory file created/reset: {SHARED_MEM_FILE}")
+    if not os.path.exists(SHARED_MEM_FILE):
+        logging.info(f"Shared memory file {SHARED_MEM_FILE} does not exist, creating...")
+        with open(SHARED_MEM_FILE, 'wb') as f:
+            f.write(b'\x00' * SHARED_MEM_SIZE)
+    else:
+        # Проверим размер файла, если меньше нужного — расширим
+        size = os.path.getsize(SHARED_MEM_FILE)
+        if size < SHARED_MEM_SIZE:
+            logging.info(f"Shared memory file size {size} less than required {SHARED_MEM_SIZE}, resizing...")
+            with open(SHARED_MEM_FILE, 'ab') as f:
+                f.write(b'\x00' * (SHARED_MEM_SIZE - size))
 
     with open(SHARED_MEM_FILE, 'r+b') as f:
         mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)

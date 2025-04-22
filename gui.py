@@ -12,7 +12,7 @@ import sys
 logging.basicConfig(level=logging.DEBUG, format='[CLIENT] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 200 * 1024  # 10 KB
+SHARED_MEM_SIZE = 100 * 1024  # 10 KB
 
 def lock_file(f):
     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -31,9 +31,24 @@ class App(tk.Tk):
             logging.error("This client works only on Linux.")
             sys.exit(1)
 
+        # Проверяем, существует ли директория /tmp
+        tmp_dir = os.path.dirname(SHARED_MEM_FILE)
+        if not os.path.exists(tmp_dir):
+            logging.info(f"Directory {tmp_dir} does not exist, creating...")
+            os.makedirs(tmp_dir, exist_ok=True)
+
+        # Проверяем, существует ли файл разделяемой памяти
         if not os.path.exists(SHARED_MEM_FILE):
-            logging.error("Shared memory file not found.")
-            sys.exit(1)
+            logging.info(f"Shared memory file {SHARED_MEM_FILE} does not exist, creating...")
+            with open(SHARED_MEM_FILE, 'wb') as f:
+                f.write(b'\x00' * SHARED_MEM_SIZE)
+        else:
+            # Проверим размер файла, если меньше нужного — расширим
+            size = os.path.getsize(SHARED_MEM_FILE)
+            if size < SHARED_MEM_SIZE:
+                logging.info(f"Shared memory file size {size} less than required {SHARED_MEM_SIZE}, resizing...")
+                with open(SHARED_MEM_FILE, 'ab') as f:
+                    f.write(b'\x00' * (SHARED_MEM_SIZE - size))
 
         self.mm_file = open(SHARED_MEM_FILE, 'r+b')
         self.mm = mmap.mmap(self.mm_file.fileno(), SHARED_MEM_SIZE)
