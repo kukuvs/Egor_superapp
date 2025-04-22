@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[SERVER] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 10 * 1024  # 10 KB
+SHARED_MEM_SIZE = 100 * 1024  # 10 KB
 
 SEM_REQUEST_NAME = "/sysmon_request_sem"
 SEM_RESPONSE_NAME = "/sysmon_response_sem"
