@@ -5,16 +5,19 @@ import time
 import platform
 import psutil
 import subprocess
-import posix_ipc
+import fcntl
 import logging
 
 logging.basicConfig(level=logging.DEBUG, format='[SERVER] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 100 * 1024  # 10 KB
+SHARED_MEM_SIZE = 10 * 1024  # 10 KB
 
-SEM_REQUEST_NAME = "/sysmon_request_sem"
-SEM_RESPONSE_NAME = "/sysmon_response_sem"
+def lock_file(f):
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
+def unlock_file(f):
+    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
 def get_processes():
     return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]
@@ -111,20 +114,21 @@ def server_loop():
 
     with open(SHARED_MEM_FILE, 'r+b') as f:
         mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)
-        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)
-        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)
 
         logging.info("Server started, waiting for requests...")
 
         while True:
-            logging.debug("Waiting for sem_request.acquire()")
-            sem_request.acquire()
-            logging.debug("sem_request acquired")
+            time.sleep(0.1)  # Пауза для снижения нагрузки
 
             try:
+                lock_file(f)
                 mm.seek(0)
                 raw = mm.read(SHARED_MEM_SIZE)
                 raw = raw.split(b'\x00', 1)[0]
+                if not raw:
+                    unlock_file(f)
+                    continue  # Нет запроса, ждем дальше
+
                 request_json = raw.decode('utf-8')
                 logging.debug(f"Received request JSON: {request_json}")
 
@@ -137,21 +141,22 @@ def server_loop():
                     encoded = encoded[:SHARED_MEM_SIZE]
                 mm.write(encoded)
                 mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
-                logging.debug("Response written to shared memory")
+
+                # Очищаем запрос, чтобы клиент понял, что ответ готов
+                mm.flush()
+                mm.seek(0)
+                mm.write(b'\x00' * SHARED_MEM_SIZE)
+                mm.flush()
+
+                unlock_file(f)
+                logging.debug("Response written and lock released")
 
             except Exception as e:
                 logging.error(f"Error processing request: {e}", exc_info=True)
-                error_response = json.dumps({'error': f'Server error: {str(e)}'}, ensure_ascii=False)
-                mm.seek(0)
-                encoded = error_response.encode('utf-8')
-                if len(encoded) > SHARED_MEM_SIZE:
-                    encoded = encoded[:SHARED_MEM_SIZE]
-                mm.write(encoded)
-                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
-
-            finally:
-                sem_response.release()
-                logging.debug("sem_response released")
+                try:
+                    unlock_file(f)
+                except:
+                    pass
 
 if __name__ == "__main__":
     if platform.system().lower() != 'linux':

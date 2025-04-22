@@ -5,17 +5,20 @@ import mmap
 import os
 import platform
 import time
-import posix_ipc
-import sys
+import fcntl
 import logging
+import sys
 
 logging.basicConfig(level=logging.DEBUG, format='[CLIENT] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 100 * 1024  # 10 KB
+SHARED_MEM_SIZE = 10 * 1024  # 10 KB
 
-SEM_REQUEST_NAME = "/sysmon_request_sem"
-SEM_RESPONSE_NAME = "/sysmon_response_sem"
+def lock_file(f):
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
+def unlock_file(f):
+    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
 class App(tk.Tk):
     def __init__(self):
@@ -35,9 +38,6 @@ class App(tk.Tk):
         self.mm_file = open(SHARED_MEM_FILE, 'r+b')
         self.mm = mmap.mmap(self.mm_file.fileno(), SHARED_MEM_SIZE)
 
-        self.sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME)
-        self.sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME)
-
     def send_request(self, command, data=None):
         logging.debug(f"Sending request: command={command}, data={data}")
         request_data = {'command': command}
@@ -46,45 +46,54 @@ class App(tk.Tk):
         request_json = json.dumps(request_data, ensure_ascii=False)
 
         try:
+            lock_file(self.mm_file)
             self.mm.seek(0)
             self.mm.write(request_json.encode('utf-8'))
             self.mm.write(b'\x00' * (SHARED_MEM_SIZE - len(request_json)))
-            logging.debug("Request written to shared memory")
+            self.mm.flush()
+            unlock_file(self.mm_file)
+            logging.debug("Request written and lock released")
         except Exception as e:
-            logging.error(f"Error writing request to shared memory: {e}", exc_info=True)
+            logging.error(f"Error writing request: {e}", exc_info=True)
+            try:
+                unlock_file(self.mm_file)
+            except:
+                pass
             return {'error': str(e)}
 
-        try:
-            self.sem_request.release()
-            logging.debug("sem_request released")
-        except Exception as e:
-            logging.error(f"Error releasing sem_request: {e}", exc_info=True)
-            return {'error': str(e)}
+        # Ждем ответа с таймаутом
+        timeout = 10  # секунд
+        interval = 0.1
+        waited = 0
+        while waited < timeout:
+            try:
+                lock_file(self.mm_file)
+                self.mm.seek(0)
+                raw = self.mm.read(SHARED_MEM_SIZE)
+                raw = raw.split(b'\x00', 1)[0]
+                if raw and raw != request_json.encode('utf-8'):
+                    response_json = raw.decode('utf-8')
+                    unlock_file(self.mm_file)
+                    logging.debug(f"Received response JSON: {response_json}")
+                    try:
+                        response = json.loads(response_json)
+                        return response
+                    except Exception:
+                        return {'error': 'Invalid JSON response'}
+                unlock_file(self.mm_file)
+            except Exception as e:
+                logging.error(f"Error reading response: {e}", exc_info=True)
+                try:
+                    unlock_file(self.mm_file)
+                except:
+                    pass
+                return {'error': str(e)}
 
-        try:
-            logging.debug("Waiting for sem_response.acquire()")
-            if not self.sem_response.acquire(timeout=50):
-                logging.error("Timeout waiting for response semaphore")
-                return {'error': 'Timeout waiting for response'}
-            logging.debug("sem_response acquired")
-        except Exception as e:
-            logging.error(f"Error acquiring sem_response: {e}", exc_info=True)
-            return {'error': str(e)}
+            time.sleep(interval)
+            waited += interval
 
-        try:
-            self.mm.seek(0)
-            raw = self.mm.read(SHARED_MEM_SIZE)
-            raw = raw.split(b'\x00', 1)[0]
-            response_json = raw.decode('utf-8')
-            logging.debug(f"Received response JSON: {response_json}")
-            response = json.loads(response_json)
-            return response
-        except json.JSONDecodeError:
-            logging.error("Invalid JSON response")
-            return {'error': 'Invalid JSON response'}
-        except Exception as e:
-            logging.error(f"Error reading response: {e}", exc_info=True)
-            return {'error': str(e)}
+        logging.error("Timeout waiting for response")
+        return {'error': 'Timeout waiting for response'}
 
     def create_widgets(self):
         notebook = ttk.Notebook(self)
