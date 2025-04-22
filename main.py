@@ -107,9 +107,9 @@ def handle_request(request_json):
     return json.dumps(response, ensure_ascii=False)
 
 def server_loop():
-    if not os.path.exists(SHARED_MEM_FILE):
-        with open(SHARED_MEM_FILE, 'wb') as f:
-            f.write(b'\x00' * SHARED_MEM_SIZE)
+    # Создаем или перезаписываем файл с нужным размером
+    with open(SHARED_MEM_FILE, 'wb') as f:
+        f.write(b'\x00' * SHARED_MEM_SIZE)
 
     with open(SHARED_MEM_FILE, 'r+b') as f:
         mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)
@@ -129,8 +129,11 @@ def server_loop():
             response_json = handle_request(request_json)
 
             mm.seek(0)
-            mm.write(response_json.encode('utf-8'))
-            mm.write(b'\x00' * (SHARED_MEM_SIZE - len(response_json)))
+            encoded = response_json.encode('utf-8')
+            if len(encoded) > SHARED_MEM_SIZE:
+                encoded = encoded[:SHARED_MEM_SIZE]
+            mm.write(encoded)
+            mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
 
             sem_response.release()
 

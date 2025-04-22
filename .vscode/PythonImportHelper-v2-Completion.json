@@ -343,7 +343,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def server_loop():\n    if not os.path.exists(SHARED_MEM_FILE):\n        with open(SHARED_MEM_FILE, 'wb') as f:\n            f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        print(\"Server started, waiting for requests...\")\n        while True:",
+        "peekOfCode": "def server_loop():\n    # Создаем или перезаписываем файл с нужным размером\n    with open(SHARED_MEM_FILE, 'wb') as f:\n        f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        sem_request = posix_ipc.Semaphore(SEM_REQUEST_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        sem_response = posix_ipc.Semaphore(SEM_RESPONSE_NAME, flags=posix_ipc.O_CREAT, initial_value=0)\n        print(\"Server started, waiting for requests...\")\n        while True:",
         "detail": "main",
         "documentation": {}
     },
