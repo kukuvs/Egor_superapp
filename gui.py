@@ -47,7 +47,7 @@ class App(tk.Tk):
 
         self.sem_request.release()
 
-        if not self.sem_response.acquire(timeout=10):
+        if not self.sem_response.acquire(timeout=1000):
             return {'error': 'Timeout waiting for response'}
 
         self.mm.seek(0)
