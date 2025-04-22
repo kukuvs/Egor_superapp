@@ -12,7 +12,7 @@ import sys
 logging.basicConfig(level=logging.DEBUG, format='[CLIENT] %(asctime)s %(levelname)s: %(message)s')
 
 SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'
-SHARED_MEM_SIZE = 10 * 1024  # 10 KB
+SHARED_MEM_SIZE = 200 * 1024  # 10 KB
 
 def lock_file(f):
     fcntl.flock(f.fileno(), fcntl.LOCK_EX)

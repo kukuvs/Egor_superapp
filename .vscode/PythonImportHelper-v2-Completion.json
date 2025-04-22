@@ -253,7 +253,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 200 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -262,7 +262,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")",
+        "peekOfCode": "SHARED_MEM_SIZE = 200 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -361,7 +361,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 10 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 200 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:",
         "detail": "main",
         "documentation": {}
     },
@@ -370,7 +370,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
+        "peekOfCode": "SHARED_MEM_SIZE = 200 * 1024  # 10 KB\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
         "detail": "main",
         "documentation": {}
     },
