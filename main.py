@@ -120,22 +120,30 @@ def server_loop():
 
         while True:
             sem_request.acquire()
+            try:
+                mm.seek(0)
+                raw = mm.read(SHARED_MEM_SIZE)
+                raw = raw.split(b'\x00', 1)[0]
+                request_json = raw.decode('utf-8')
 
-            mm.seek(0)
-            raw = mm.read(SHARED_MEM_SIZE)
-            raw = raw.split(b'\x00', 1)[0]
-            request_json = raw.decode('utf-8')
+                response_json = handle_request(request_json)
 
-            response_json = handle_request(request_json)
-
-            mm.seek(0)
-            encoded = response_json.encode('utf-8')
-            if len(encoded) > SHARED_MEM_SIZE:
-                encoded = encoded[:SHARED_MEM_SIZE]
-            mm.write(encoded)
-            mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
-
-            sem_response.release()
+                mm.seek(0)
+                encoded = response_json.encode('utf-8')
+                if len(encoded) > SHARED_MEM_SIZE:
+                    encoded = encoded[:SHARED_MEM_SIZE]
+                mm.write(encoded)
+                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+            except Exception as e:
+                error_response = json.dumps({'error': f'Server error: {str(e)}'}, ensure_ascii=False)
+                mm.seek(0)
+                encoded = error_response.encode('utf-8')
+                if len(encoded) > SHARED_MEM_SIZE:
+                    encoded = encoded[:SHARED_MEM_SIZE]
+                mm.write(encoded)
+                mm.write(b'\x00' * (SHARED_MEM_SIZE - len(encoded)))
+            finally:
+                sem_response.release()
 
 if __name__ == "__main__":
     if platform.system().lower() != 'linux':
