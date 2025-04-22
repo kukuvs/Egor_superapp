@@ -1,0 +1,404 @@
+[
+    {
+        "label": "runpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "runpy",
+        "description": "runpy",
+        "detail": "runpy",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "site",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "site",
+        "description": "site",
+        "detail": "site",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "tkinter",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "ttk",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "scrolledtext",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "mmap",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "mmap",
+        "description": "mmap",
+        "detail": "mmap",
+        "documentation": {}
+    },
+    {
+        "label": "platform",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "platform",
+        "description": "platform",
+        "detail": "platform",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "fcntl",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "fcntl",
+        "description": "fcntl",
+        "detail": "fcntl",
+        "documentation": {}
+    },
+    {
+        "label": "msvcrt",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "msvcrt",
+        "description": "msvcrt",
+        "detail": "msvcrt",
+        "documentation": {}
+    },
+    {
+        "label": "psutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "psutil",
+        "description": "psutil",
+        "detail": "psutil",
+        "documentation": {}
+    },
+    {
+        "label": "netifaces",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "netifaces",
+        "description": "netifaces",
+        "detail": "netifaces",
+        "documentation": {}
+    },
+    {
+        "label": "screeninfo",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "screeninfo",
+        "description": "screeninfo",
+        "detail": "screeninfo",
+        "documentation": {}
+    },
+    {
+        "label": "subprocess",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "subprocess",
+        "description": "subprocess",
+        "detail": "subprocess",
+        "documentation": {}
+    },
+    {
+        "label": "bin_dir",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "bin_dir = os.path.dirname(abs_file)\nbase = bin_dir[: -len(\"Scripts\") - 1]  # strip away the bin part from the __file__, plus the path separator\n# prepend bin to PATH (this file is inside the bin directory)\nos.environ[\"PATH\"] = os.pathsep.join([bin_dir, *os.environ.get(\"PATH\", \"\").split(os.pathsep)])\nos.environ[\"VIRTUAL_ENV\"] = base  # virtual env is right above bin directory\nos.environ[\"VIRTUAL_ENV_PROMPT\"] = \"kukuvs-superapp\" or os.path.basename(base)  # noqa: SIM222\n# add the virtual environments libraries to the host python import mechanism\nprev_length = len(sys.path)\nfor lib in \"..\\\\Lib\\\\site-packages\".split(os.pathsep):\n    path = os.path.realpath(os.path.join(bin_dir, lib))",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "base",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "base = bin_dir[: -len(\"Scripts\") - 1]  # strip away the bin part from the __file__, plus the path separator\n# prepend bin to PATH (this file is inside the bin directory)\nos.environ[\"PATH\"] = os.pathsep.join([bin_dir, *os.environ.get(\"PATH\", \"\").split(os.pathsep)])\nos.environ[\"VIRTUAL_ENV\"] = base  # virtual env is right above bin directory\nos.environ[\"VIRTUAL_ENV_PROMPT\"] = \"kukuvs-superapp\" or os.path.basename(base)  # noqa: SIM222\n# add the virtual environments libraries to the host python import mechanism\nprev_length = len(sys.path)\nfor lib in \"..\\\\Lib\\\\site-packages\".split(os.pathsep):\n    path = os.path.realpath(os.path.join(bin_dir, lib))\n    site.addsitedir(path)",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "os.environ[\"PATH\"]",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "os.environ[\"PATH\"] = os.pathsep.join([bin_dir, *os.environ.get(\"PATH\", \"\").split(os.pathsep)])\nos.environ[\"VIRTUAL_ENV\"] = base  # virtual env is right above bin directory\nos.environ[\"VIRTUAL_ENV_PROMPT\"] = \"kukuvs-superapp\" or os.path.basename(base)  # noqa: SIM222\n# add the virtual environments libraries to the host python import mechanism\nprev_length = len(sys.path)\nfor lib in \"..\\\\Lib\\\\site-packages\".split(os.pathsep):\n    path = os.path.realpath(os.path.join(bin_dir, lib))\n    site.addsitedir(path)\nsys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]\nsys.real_prefix = sys.prefix",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "os.environ[\"VIRTUAL_ENV\"]",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "os.environ[\"VIRTUAL_ENV\"] = base  # virtual env is right above bin directory\nos.environ[\"VIRTUAL_ENV_PROMPT\"] = \"kukuvs-superapp\" or os.path.basename(base)  # noqa: SIM222\n# add the virtual environments libraries to the host python import mechanism\nprev_length = len(sys.path)\nfor lib in \"..\\\\Lib\\\\site-packages\".split(os.pathsep):\n    path = os.path.realpath(os.path.join(bin_dir, lib))\n    site.addsitedir(path)\nsys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]\nsys.real_prefix = sys.prefix\nsys.prefix = base",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "os.environ[\"VIRTUAL_ENV_PROMPT\"]",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "os.environ[\"VIRTUAL_ENV_PROMPT\"] = \"kukuvs-superapp\" or os.path.basename(base)  # noqa: SIM222\n# add the virtual environments libraries to the host python import mechanism\nprev_length = len(sys.path)\nfor lib in \"..\\\\Lib\\\\site-packages\".split(os.pathsep):\n    path = os.path.realpath(os.path.join(bin_dir, lib))\n    site.addsitedir(path)\nsys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]\nsys.real_prefix = sys.prefix\nsys.prefix = base",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "prev_length",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "prev_length = len(sys.path)\nfor lib in \"..\\\\Lib\\\\site-packages\".split(os.pathsep):\n    path = os.path.realpath(os.path.join(bin_dir, lib))\n    site.addsitedir(path)\nsys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]\nsys.real_prefix = sys.prefix\nsys.prefix = base",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "sys.path[:]",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "sys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]\nsys.real_prefix = sys.prefix\nsys.prefix = base",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "sys.real_prefix",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "sys.real_prefix = sys.prefix\nsys.prefix = base",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "sys.prefix",
+        "kind": 5,
+        "importPath": ".venv.Scripts.activate_this",
+        "description": ".venv.Scripts.activate_this",
+        "peekOfCode": "sys.prefix = base",
+        "detail": ".venv.Scripts.activate_this",
+        "documentation": {}
+    },
+    {
+        "label": "App",
+        "kind": 6,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "class App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")\n        self.create_widgets()\n    def send_request(self, command, data=None):\n        if not os.path.exists(SHARED_MEM_FILE):\n            return {'error': 'Shared memory file not found'}\n        with open(SHARED_MEM_FILE, 'r+b') as f:",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "lock_file",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "unlock_file",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)\nclass App(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"System Monitor\")\n        self.geometry(\"900x700\")",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "SHARED_MEM_SIZE",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nif platform.system() == 'Windows':\n    SHARED_MEM_FILE = os.path.join(os.getenv('TEMP'), 'sysmon_shared_mem')\nelse:\n    SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\ndef lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "lock_file",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "unlock_file",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def unlock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_processes",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_processes():\n    processes = []\n    for proc in psutil.process_iter(['pid', 'name', 'username']):\n        processes.append(proc.info)\n    return processes\ndef get_wireless_status():\n    return psutil.net_if_stats()\ndef get_network_settings():\n    return netifaces.interfaces()\ndef get_screen_resolution():",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_wireless_status",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_wireless_status():\n    return psutil.net_if_stats()\ndef get_network_settings():\n    return netifaces.interfaces()\ndef get_screen_resolution():\n    screen = screeninfo.get_monitors()[0]\n    return screen.width, screen.height\ndef execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_network_settings",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_network_settings():\n    return netifaces.interfaces()\ndef get_screen_resolution():\n    screen = screeninfo.get_monitors()[0]\n    return screen.width, screen.height\ndef execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        try:\n            output = result.stdout.decode('cp866')",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_screen_resolution",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_screen_resolution():\n    screen = screeninfo.get_monitors()[0]\n    return screen.width, screen.height\ndef execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        try:\n            output = result.stdout.decode('cp866')\n        except UnicodeDecodeError:\n            output = result.stdout.decode('cp866', errors='replace')",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "execute_command",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        try:\n            output = result.stdout.decode('cp866')\n        except UnicodeDecodeError:\n            output = result.stdout.decode('cp866', errors='replace')\n        return output\n    except subprocess.CalledProcessError as e:\n        try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_network_config",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_network_config():\n    try:\n        system = platform.system().lower()\n        if system == 'windows':\n            cmd = 'ipconfig /all'\n            encoding = 'cp866'\n        else:\n            try:\n                subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n                cmd = 'ifconfig -a'",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "handle_request",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def handle_request(request_json):\n    try:\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        if cmd == 'get_processes':\n            response = get_processes()\n        elif cmd == 'get_wireless_status':\n            response = {k: v._asdict() for k, v in get_wireless_status().items()}\n        elif cmd == 'get_network_config':\n            response = get_network_config()",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "server_loop",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def server_loop():\n    # Создаем файл, если не существует\n    if not os.path.exists(SHARED_MEM_FILE):\n        with open(SHARED_MEM_FILE, 'wb') as f:\n            f.write(b'\\x00' * SHARED_MEM_SIZE)\n    with open(SHARED_MEM_FILE, 'r+b') as f:\n        mm = mmap.mmap(f.fileno(), SHARED_MEM_SIZE)\n        print(\"Server started, waiting for requests...\")\n        while True:\n            # Ждем, пока клиент запишет запрос (простой polling)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "SHARED_MEM_SIZE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "SHARED_MEM_SIZE = 10 * 1024  # 10 KB\nif platform.system() == 'Windows':\n    SHARED_MEM_FILE = os.path.join(os.getenv('TEMP'), 'sysmon_shared_mem')\nelse:\n    SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\ndef lock_file(f):\n    if platform.system() == 'Windows':\n        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, SHARED_MEM_SIZE)\n    else:\n        fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "start_server",
+        "kind": 2,
+        "importPath": "run_app",
+        "description": "run_app",
+        "peekOfCode": "def start_server():\n    # Запуск серверной части\n    server_process = subprocess.Popen([sys.executable, 'server.py'])\n    return server_process\ndef start_gui():\n    # Запуск GUI части\n    gui_process = subprocess.Popen([sys.executable, 'gui.py'])\n    return gui_process\ndef main():\n    # Запуск сервера и GUI",
+        "detail": "run_app",
+        "documentation": {}
+    },
+    {
+        "label": "start_gui",
+        "kind": 2,
+        "importPath": "run_app",
+        "description": "run_app",
+        "peekOfCode": "def start_gui():\n    # Запуск GUI части\n    gui_process = subprocess.Popen([sys.executable, 'gui.py'])\n    return gui_process\ndef main():\n    # Запуск сервера и GUI\n    server_process = start_server()\n    gui_process = start_gui()\n    try:\n        # Ожидание завершения процессов",
+        "detail": "run_app",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "run_app",
+        "description": "run_app",
+        "peekOfCode": "def main():\n    # Запуск сервера и GUI\n    server_process = start_server()\n    gui_process = start_gui()\n    try:\n        # Ожидание завершения процессов\n        server_process.wait()\n        gui_process.wait()\n    except KeyboardInterrupt:\n        # Обработка завершения по Ctrl+C",
+        "detail": "run_app",
+        "documentation": {}
+    }
+]
