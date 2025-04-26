@@ -60,7 +60,6 @@ class App(tk.Tk):
 
         self.create_menu()
         self.bind_hotkeys()
-        self.init_drag_and_drop()
 
     def create_menu(self):
         menubar = tk.Menu(self)
