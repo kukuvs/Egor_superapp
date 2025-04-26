@@ -69,6 +69,22 @@
         "documentation": {}
     },
     {
+        "label": "filedialog",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "messagebox",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
         "label": "json",
         "kind": 6,
         "isExtraImport": true,
@@ -138,6 +154,14 @@
         "importPath": "subprocess",
         "description": "subprocess",
         "detail": "subprocess",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
         "documentation": {}
     },
     {
@@ -253,7 +277,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 200 * 1024  # 10 KB\nFLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 200 * 1024  # 200 KB\nFLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
         "detail": "gui",
         "documentation": {}
     },
@@ -262,7 +286,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "SHARED_MEM_SIZE = 200 * 1024  # 10 KB\nFLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):",
+        "peekOfCode": "SHARED_MEM_SIZE = 200 * 1024  # 200 KB\nFLAG_POS = 0\nFLAG_SIZE = 1\nDATA_POS = FLAG_POS + FLAG_SIZE\nFLAG_EMPTY = b'\\x00'\nFLAG_REQUEST = b'\\x01'\nFLAG_RESPONSE = b'\\x02'\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):",
         "detail": "gui",
         "documentation": {}
     },
@@ -325,7 +349,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')",
+        "peekOfCode": "def lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    procs = []\n    for proc in psutil.process_iter(['pid', 'name', 'username', 'create_time']):\n        try:\n            info = proc.info\n            procs.append(info)",
         "detail": "main",
         "documentation": {}
     },
@@ -334,7 +358,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]",
+        "peekOfCode": "def unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    procs = []\n    for proc in psutil.process_iter(['pid', 'name', 'username', 'create_time']):\n        try:\n            info = proc.info\n            procs.append(info)\n        except Exception:\n            continue",
         "detail": "main",
         "documentation": {}
     },
@@ -343,7 +367,16 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)\n        return result.stdout.decode('utf-8').strip().split('\\n')\n    except Exception as e:\n        return [f\"Error getting GPU info: {e}\"]\ndef detect_file_creation():\n    home = os.path.expanduser(\"~\")",
+        "peekOfCode": "def get_processes():\n    procs = []\n    for proc in psutil.process_iter(['pid', 'name', 'username', 'create_time']):\n        try:\n            info = proc.info\n            procs.append(info)\n        except Exception:\n            continue\n    return procs\ndef log_new_processes():",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "log_new_processes",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def log_new_processes():\n    \"\"\"Записываем в лог процессы, запущенные после старта сервера\"\"\"\n    global start_processes\n    current = {}\n    new_procs = []\n    for proc in psutil.process_iter(['pid', 'name', 'create_time']):\n        try:\n            pid = proc.info['pid']\n            name = proc.info['name']\n            ctime = proc.info['create_time']",
         "detail": "main",
         "documentation": {}
     },
@@ -379,7 +412,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_network_config():\n    try:\n        try:\n            subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n            cmd = 'ifconfig -a'\n        except Exception:\n            cmd = 'ip addr'\n        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except Exception as e:",
+        "peekOfCode": "def get_network_config():\n    try:\n        # Проверяем доступность ifconfig\n        try:\n            subprocess.run(['ifconfig'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)\n            cmd = 'ifconfig -a'\n        except Exception:\n            cmd = 'ip addr'\n        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')",
         "detail": "main",
         "documentation": {}
     },
@@ -388,7 +421,34 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except subprocess.CalledProcessError as e:\n        return e.stderr.decode('utf-8', errors='replace')\ndef handle_request(request_json):\n    try:\n        logging.debug(f\"Handling request JSON: {request_json}\")\n        request = json.loads(request_json)",
+        "peekOfCode": "def execute_command(command):\n    try:\n        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        return result.stdout.decode('utf-8', errors='replace')\n    except subprocess.CalledProcessError as e:\n        return e.stderr.decode('utf-8', errors='replace')\ndef get_removable_devices():\n    \"\"\"Возвращает список съемных носителей\"\"\"\n    devices = []\n    try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_removable_devices",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_removable_devices():\n    \"\"\"Возвращает список съемных носителей\"\"\"\n    devices = []\n    try:\n        partitions = psutil.disk_partitions(all=False)\n        for p in partitions:\n            # Фильтрация по mountpoint для съемных носителей\n            if p.mountpoint.startswith('/media') or p.mountpoint.startswith('/run/media'):\n                devices.append(f\"{p.device} mounted on {p.mountpoint} ({p.fstype})\")\n        if not devices:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "run_system_utility",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def run_system_utility(name):\n    \"\"\"Запуск системных утилит по имени\"\"\"\n    utilities = {\n        'terminal': ['x-terminal-emulator'],  # или 'gnome-terminal', 'konsole' и т.п.\n        'system_monitor': ['gnome-system-monitor'],\n        'disk_usage': ['baobab'],  # Аналог \"Управление дисками\"\n        'file_manager': ['nautilus'],\n        'network_manager': ['nm-connection-editor'],\n    }\n    cmd = utilities.get(name)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "terminal_command_handler",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def terminal_command_handler(command_line):\n    \"\"\"Обрабатывает команды терминала, поддерживает минимум 10 команд\"\"\"\n    command_line = command_line.strip()\n    if not command_line:\n        return \"\"\n    parts = command_line.split()\n    cmd = parts[0]\n    args = parts[1:]\n    # Список поддерживаемых команд\n    supported_cmds = {",
         "detail": "main",
         "documentation": {}
     },
@@ -397,7 +457,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def handle_request(request_json):\n    try:\n        logging.debug(f\"Handling request JSON: {request_json}\")\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        logging.debug(f\"Command received: {cmd}\")\n        if cmd == 'get_processes':\n            response = get_processes()\n        elif cmd == 'get_gpu_info':\n            response = get_gpu_info()",
+        "peekOfCode": "def handle_request(request_json):\n    try:\n        logging.debug(f\"Handling request JSON: {request_json}\")\n        request = json.loads(request_json)\n        cmd = request.get('command')\n        data = request.get('data')\n        logging.debug(f\"Command received: {cmd} with data: {data}\")\n        # Логируем новые процессы при каждом запросе (можно оптимизировать)\n        log_new_processes()\n        if cmd == 'get_processes':",
         "detail": "main",
         "documentation": {}
     },
@@ -415,7 +475,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 200 * 1024  # 10 KB\nFLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):",
+        "peekOfCode": "SHARED_MEM_FILE = '/tmp/sysmon_shared_mem'\nSHARED_MEM_SIZE = 200 * 1024  # 200 KB\nFLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера",
         "detail": "main",
         "documentation": {}
     },
@@ -424,7 +484,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SHARED_MEM_SIZE = 200 * 1024  # 10 KB\nFLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)",
+        "peekOfCode": "SHARED_MEM_SIZE = 200 * 1024  # 200 KB\nFLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'",
         "detail": "main",
         "documentation": {}
     },
@@ -433,7 +493,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "FLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):",
+        "peekOfCode": "FLAG_POS = 0  # позиция флага в mmap\nFLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))",
         "detail": "main",
         "documentation": {}
     },
@@ -442,7 +502,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "FLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
+        "peekOfCode": "FLAG_SIZE = 1  # размер флага в байтах\nDATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))\nstart_processes = {}",
         "detail": "main",
         "documentation": {}
     },
@@ -451,7 +511,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "DATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():",
+        "peekOfCode": "DATA_POS = FLAG_POS + FLAG_SIZE  # позиция начала данных\n# Флаги состояния\nFLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))\nstart_processes = {}\ndef lock_file(f):",
         "detail": "main",
         "documentation": {}
     },
@@ -460,7 +520,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "FLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():",
+        "peekOfCode": "FLAG_EMPTY = b'\\x00'  # Буфер пуст, клиент может писать запрос\nFLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))\nstart_processes = {}\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):",
         "detail": "main",
         "documentation": {}
     },
@@ -469,7 +529,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "FLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:",
+        "peekOfCode": "FLAG_REQUEST = b'\\x01'  # Запрос записан, сервер может читать\nFLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))\nstart_processes = {}\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)",
         "detail": "main",
         "documentation": {}
     },
@@ -478,7 +538,25 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "FLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    return [proc.info for proc in psutil.process_iter(['pid', 'name', 'username'])]\ndef get_gpu_info():\n    try:\n        result = subprocess.run('lspci | grep VGA', shell=True, stdout=subprocess.PIPE)",
+        "peekOfCode": "FLAG_RESPONSE = b'\\x02'  # Ответ записан, клиент может читать\n# Лог файл для процессов, запущенных во время работы сервера\nPROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))\nstart_processes = {}\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESS_LOG_FILE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "PROCESS_LOG_FILE = '/tmp/superapp_processes.log'\n# Список процессов при старте сервера (pid -> (name, create_time))\nstart_processes = {}\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    procs = []\n    for proc in psutil.process_iter(['pid', 'name', 'username', 'create_time']):",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "start_processes",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "start_processes = {}\ndef lock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_EX)\ndef unlock_file(f):\n    fcntl.flock(f.fileno(), fcntl.LOCK_UN)\ndef get_processes():\n    procs = []\n    for proc in psutil.process_iter(['pid', 'name', 'username', 'create_time']):\n        try:\n            info = proc.info",
         "detail": "main",
         "documentation": {}
     },
