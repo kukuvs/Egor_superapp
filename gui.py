@@ -90,14 +90,14 @@ class App(tk.Tk):
         messagebox.showinfo("О программе", "Суперапп версия 1.0\nРазработано на Python с использованием Tkinter.")
 
     def bind_hotkeys(self):
-        self.bind('<Control-p>', lambda e: self.get_processes())
-        self.bind('<Control-g>', lambda e: self.get_gpu_info())
-        self.bind('<Control-f>', lambda e: self.detect_file_creation())
-        self.bind('<Control-u>', lambda e: self.get_uptime())
-        self.bind('<Control-n>', lambda e: self.get_network_config())
+        self.bind('<Control-p>', lambda e: (self.notebook.select(self.process_frame), self.get_processes()))
+        self.bind('<Control-g>', lambda e: (self.notebook.select(self.gpu_frame), self.get_gpu_info()))
+        self.bind('<Control-f>', lambda e: (self.notebook.select(self.file_creation_frame), self.detect_file_creation()))
+        self.bind('<Control-u>', lambda e: (self.notebook.select(self.uptime_frame), self.get_uptime()))
+        self.bind('<Control-n>', lambda e: (self.notebook.select(self.network_frame), self.get_network_config()))
         self.bind('<Control-s>', lambda e: self.save_process_report())
-        self.bind('<Control-t>', lambda e: self.open_terminal_tab())
-        self.bind('<Control-r>', lambda e: self.get_removable_devices())
+        self.bind('<Control-t>', lambda e: self.notebook.select(self.terminal_frame))
+        self.bind('<Control-r>', lambda e: (self.notebook.select(self.removable_frame), self.get_removable_devices()))
         self.bind('<Control-l>', lambda e: self.show_utilities_menu())
 
     def init_drag_and_drop(self):
