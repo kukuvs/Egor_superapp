@@ -86,7 +86,7 @@ class App(tk.Tk):
         messagebox.showinfo("Горячие клавиши", help_text)
 
     def show_about(self):
-        messagebox.showinfo("О программе", "Суперапп версия 1.0\nРазработано на Python с использованием Tkinter.")
+        messagebox.showinfo("О программе", "Суперапп версия 1.0\nРазработано на Python с использованием Tkinter. Качинский E.О ПРИ-33")
 
     def bind_hotkeys(self):
         self.bind('<Control-p>', lambda e: (self.notebook.select(self.process_frame), self.get_processes()))
